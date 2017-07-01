@@ -104,7 +104,7 @@ def build_model():
 
 
 def train(model, saver):
-    epochs = 15
+    epochs = 30
     batch_size = 50
     train_samples = 55000
     test_samples = 10000
