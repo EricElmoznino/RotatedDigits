@@ -79,7 +79,7 @@ def build_model():
 
     model = inputs_placeholder
     with tf.variable_scope('convolution_layer'):
-        model = hp.convolve(model, [filter_size, filter_size], 1, num_features)
+        model = hp.convolve(model, [filter_size, filter_size], 1, num_features, pad=True)
         model = tf.nn.relu(model)
 
     with tf.variable_scope('fully_connected_layer'):
