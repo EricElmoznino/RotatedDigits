@@ -76,7 +76,7 @@ def process_data(train_path, test_path, validation_path, batch_size):
 def build_model():
     model = inputs_placeholder
     with tf.variable_scope('convolution_layer_1'):
-        model = hp.convolve(model, [5, 5], 1, 6)
+        model = hp.convolve(model, [5, 5], 1, 6, pad=True)
         model = tf.nn.relu(model)
         model = hp.max_pool(model, [2, 2])
     with tf.variable_scope('convolution_layer_2'):
