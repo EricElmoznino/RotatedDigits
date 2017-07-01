@@ -135,14 +135,14 @@ def train(model, saver):
                     _, a, s = sess.run([optimizer, angle_error, summaries],
                                        feed_dict={inputs_placeholder: train_inputs,
                                                   labels_placeholder: train_labels,
-                                                  keep_prob_placeholder: 1.0})
+                                                  keep_prob_placeholder: 0.75})
                     train_writer.add_summary(s, step)
                     hp.log_step(step, n_steps, start_time, a)
                 else:
                     _, a = sess.run([optimizer, angle_error],
                                     feed_dict={inputs_placeholder: train_inputs,
                                                labels_placeholder: train_labels,
-                                               keep_prob_placeholder: 1.0})
+                                               keep_prob_placeholder: 0.75})
 
                 epoch_angle_error += a
                 step += 1
