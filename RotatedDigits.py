@@ -74,22 +74,33 @@ def process_data(train_path, test_path, validation_path, batch_size):
 
 
 def build_model():
-    filter_size = 12
-    num_features = 25
-
     model = inputs_placeholder
-    with tf.variable_scope('convolution_layer'):
-        model = hp.convolve(model, [filter_size, filter_size], 1, num_features, pad=True)
+    with tf.variable_scope('convolution_layer_1'):
+        model = hp.convolve(model, [5, 5], 1, 6)
         model = tf.nn.relu(model)
-
-    with tf.variable_scope('fully_connected_layer'):
-        model = tf.reshape(model, [-1, 28 * 28 * num_features])
-        weights = hp.weight_variables([28 * 28 * num_features, 1], mean=0.0)
+        model = hp.max_pool(model, [2, 2])
+    with tf.variable_scope('convolution_layer_2'):
+        model = hp.convolve(model, [5, 5], 6, 16)
+        model = tf.nn.relu(model)
+        model = hp.max_pool(model, [2, 2])
+    with tf.variable_scope('fully_connected_layer_1'):
+        num_features = 16 * 5 * 5
+        model = tf.reshape(model, [-1, num_features])
+        weights = hp.weight_variables([num_features, 120])
+        biases = hp.bias_variables([120])
+        model = tf.matmul(model, weights) + biases
+        model = tf.nn.relu(model)
+    with tf.variable_scope('fully_connected_layer_2'):
+        weights = hp.weight_variables([120, 84])
+        biases = hp.bias_variables([84])
+        model = tf.matmul(model, weights) + biases
+        model = tf.nn.relu(model)
+    with tf.variable_scope('output'):
+        weights = hp.weight_variables([84, 1], mean=0.0)
         model = tf.matmul(model, weights)
+        model = tf.nn.dropout(model, keep_prob=keep_prob_placeholder)
 
-    model = tf.nn.dropout(model, keep_prob=keep_prob_placeholder)
-
-    return model, tf.train.Saver(keep_checkpoint_every_n_hours=1)
+    return model, tf.train.Saver()
 
 
 def train(model, saver):
@@ -148,13 +159,12 @@ def train(model, saver):
                 step += 1
 
             hp.log_epoch(epoch, epochs, epoch_angle_error / n_batches)
-            saver.save(sess, os.path.join(train_path, 'model.ckpt'), global_step=step)
             val_angle_error = loss_for_queue(sess, angle_error, validation_set, int(validation_samples / 50))
             hp.log_generic(val_angle_error, 'validation')
 
+        saver.save(sess, os.path.join(train_path, 'model.ckpt'))
         test_angle_error = loss_for_queue(sess, angle_error, test_set, int(test_samples / 50))
         hp.log_generic(test_angle_error, 'test')
-        saver.save(sess, os.path.join(train_path, 'model.ckpt'))
 
         coord.request_stop()
         coord.join(threads)
